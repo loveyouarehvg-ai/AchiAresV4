@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ACHI-ARES KEY SYSTEM</title>
+    <style>
+        body { background: #0a0a0a; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; padding-top: 100px; }
+        .container { border: 2px solid #ff0000; display: inline-block; padding: 40px; border-radius: 20px; background: #111; box-shadow: 0 0 20px #ff0000; }
+        h1 { color: #ff0000; text-shadow: 0 0 10px #ff0000; }
+        #timer { font-size: 30px; margin: 20px; color: #ffcc00; }
+        #key-box { font-size: 24px; color: #00ff00; margin: 20px; display: none; border: 1px dashed #00ff00; padding: 10px; }
+        button { background: #ff0000; color: white; border: none; padding: 15px 30px; cursor: pointer; border-radius: 10px; font-weight: bold; font-size: 18px; transition: 0.3s; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        button:hover:not(:disabled) { transform: scale(1.1); background: #ff3333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 ACHI-ARES KEY SYSTEM</h1>
+        <p>กรุณารอ 10 วินาที เพื่อรับคีย์ใช้งาน (อายุคีย์ 5222 วัน)</p>
+        <div id="timer">10</div>
+        <div id="key-box">ACHI-5222-DAYS-PRO</div>
+        <br>
+        <button id="copyBtn" disabled onclick="copyKey()">คัดลอกคีย์ (COPY KEY)</button>
+    </div>
+
+    <script>
+        let timeLeft = 10;
+        let timerElement = document.getElementById('timer');
+        let countdown = setInterval(() => {
+            timeLeft--;
+            timerElement.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                timerElement.style.display = 'none';
+                document.getElementById('key-box').style.display = 'block';
+                document.getElementById('copyBtn').disabled = false;
+            }
+        }, 1000);
+
+        function copyKey() {
+            navigator.clipboard.writeText("ACHI-5222-DAYS-PRO");
+            alert("คัดลอกคีย์เรียบร้อยแล้ว! เอาไปใส่ในเกมได้เลย");
+        }
+    </script>
+</body>
+</html>
