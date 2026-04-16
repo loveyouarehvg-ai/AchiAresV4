@@ -1,4 +1,4 @@
---// ACHI-ARES V5.1 (Fixed Anti-Grab & Tutorial)
+--// ACHI-ARES V5.5 (Final Tutorial Edition)
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local UICorner = Instance.new("UICorner")
@@ -22,7 +22,7 @@ local RS = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
 
 --// GUI Setup
-ScreenGui.Name = "AchiAresV5_1"
+ScreenGui.Name = "AchiAresV5_5"
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -34,12 +34,24 @@ MainFrame.Position = UDim2.new(0.5, -100, 0.5, -150)
 MainFrame.Size = UDim2.new(0, 200, 0, 320)
 MainFrame.Active = true
 MainFrame.Draggable = true
+MainFrame.Visible = false
 
 UICorner.CornerRadius = UDim.new(0, 10)
 UICorner.Parent = MainFrame
 
 UIStroke.Thickness = 3
 UIStroke.Parent = MainFrame
+
+-- ระบบเปิด/ปิดเมนู และ คืนค่าเมาส์
+local function ToggleMenu()
+    MainFrame.Visible = not MainFrame.Visible
+    AimToggle.Modal = MainFrame.Visible
+    if MainFrame.Visible then
+        UserInputService.MouseIconEnabled = true
+    else
+        UserInputService.MouseIconEnabled = false
+    end
+end
 
 -- ระบบสีรุ้ง
 RunService.RenderStepped:Connect(function()
@@ -51,7 +63,7 @@ end)
 
 Title.Size = UDim2.new(1, 0, 0, 50)
 Title.Text = "ACHI-ARES BY อชิ"
-Title.Font = Enum.Font.SpecialElite -- ฟอนต์เท่ๆ
+Title.Font = Enum.Font.SpecialElite
 Title.TextSize = 18
 Title.BackgroundTransparency = 1
 Title.Parent = MainFrame
@@ -146,12 +158,6 @@ local CE = RS:WaitForChild("CharacterEvents", 5)
 local StruggleEvent = CE and CE:WaitForChild("Struggle", 5)
 local BeingHeld = LocalPlayer:WaitForChild("IsHeld", 5)
 
-workspace.DescendantAdded:Connect(function(v)
-    if AntiGrabEnabled and v:IsA("Explosion") then
-        v.BlastPressure = 0
-    end
-end)
-
 if BeingHeld then
     BeingHeld.Changed:Connect(function(C)
         if AntiGrabEnabled and C == true then
@@ -159,7 +165,6 @@ if BeingHeld then
             if BeingHeld.Value == true and StruggleEvent then
                 local Event;
                 Event = RunService.RenderStepped:Connect(function()
-                    -- เพิ่มการเช็ค AntiGrabEnabled เพื่อให้ปิดใช้งานได้จริง
                     if AntiGrabEnabled and BeingHeld.Value == true then
                         if char and char:FindFirstChild("HumanoidRootPart") then
                             char["HumanoidRootPart"].AssemblyLinearVelocity = Vector3.new()
@@ -243,32 +248,28 @@ workspace.ChildAdded:Connect(function(m)
 end)
 
 UserInputService.InputBegan:Connect(function(i, gp)
-    if not gp and i.KeyCode == MenuKey then MainFrame.Visible = not MainFrame.Visible end
+    if not gp and i.KeyCode == MenuKey then 
+        ToggleMenu() 
+    end
 end)
 
---// สอนใช้งานภาษาไทย 5 วินาที
+--// คำอธิบายการใช้งานภาษาไทย 5 วินาที
 task.spawn(function()
-    StarterGui:SetCore("SendNotification", {
-        Title = "ยินดีต้อนรับ!",
-        Text = "ACHI-ARES BY อชิ โหลดเสร็จแล้ว",
-        Duration = 5
-    })
-    task.wait(1.2)
-    StarterGui:SetCore("SendNotification", {
-        Title = "วิธีเปิดเมนู",
-        Text = "กดปุ่ม K เพื่อเปิดหรือปิดเมนูหลัก",
-        Duration = 5
-    })
-    task.wait(1.2)
-    StarterGui:SetCore("SendNotification", {
-        Title = "วิธีใช้ Aimbot",
-        Text = "เปิด ON แล้วกด Q เพื่อล็อคเป้าหมายใกล้ที่สุด",
-        Duration = 5
-    })
-    task.wait(1.2)
-    StarterGui:SetCore("SendNotification", {
-        Title = "ระบบ Anti-Grab",
-        Text = "ถ้าเปิดไว้ ตัวจะหลุดเองทันทีเมื่อโดนจับ",
-        Duration = 5
-    })
+    local function Notify(title, text)
+        StarterGui:SetCore("SendNotification", {
+            Title = title,
+            Text = text,
+            Duration = 5
+        })
+    end
+
+    Notify("ยินดีต้อนรับ!", "ACHI-ARES V5.5 BY อชิ โหลดแล้ว!")
+    task.wait(1)
+    Notify("ปุ่มเปิดเมนู", "กดปุ่ม [ K ] เพื่อเปิดเมนูและปลดล็อคเมาส์")
+    task.wait(1)
+    Notify("วิธีใช้ AIMBOT", "เปิด ON แล้วกดปุ่ม [ Q ] เพื่อล็อคเป้าหมาย")
+    task.wait(1)
+    Notify("ระบบ FLING", "ใส่ความแรงแล้วเปิด ON เพื่อสะบัดศัตรู")
+    task.wait(1)
+    Notify("ANTI-GRAB", "เมื่อโดนจับ ตัวจะหลุดเองทันที (หลุดบัคปิดไม่ได้แล้ว)")
 end)
