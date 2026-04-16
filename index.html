@@ -2,45 +2,143 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ACHI-ARES KEY SYSTEM</title>
     <style>
-        body { background: #0a0a0a; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; padding-top: 100px; }
-        .container { border: 2px solid #ff0000; display: inline-block; padding: 40px; border-radius: 20px; background: #111; box-shadow: 0 0 20px #ff0000; }
-        h1 { color: #ff0000; text-shadow: 0 0 10px #ff0000; }
-        #timer { font-size: 30px; margin: 20px; color: #ffcc00; }
-        #key-box { font-size: 24px; color: #00ff00; margin: 20px; display: none; border: 1px dashed #00ff00; padding: 10px; }
-        button { background: #ff0000; color: white; border: none; padding: 15px 30px; cursor: pointer; border-radius: 10px; font-weight: bold; font-size: 18px; transition: 0.3s; }
-        button:disabled { background: #555; cursor: not-allowed; }
-        button:hover:not(:disabled) { transform: scale(1.1); background: #ff3333; }
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            background: #111111;
+            border: 2px solid #ff0000;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .status {
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        #timer {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffcc00;
+            margin: 20px 0;
+        }
+
+        .key-display {
+            display: none;
+            background: #222;
+            border: 1px dashed #00ff00;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 20px;
+            color: #00ff00;
+            word-break: break-all;
+        }
+
+        button {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+        }
+
+        button:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+
+        button:hover:not(:disabled) {
+            background: #ff3333;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>🔑 ACHI-ARES KEY SYSTEM</h1>
-        <p>กรุณารอ 10 วินาที เพื่อรับคีย์ใช้งาน (อายุคีย์ 5222 วัน)</p>
+        <h1>🔑 ACHI-ARES KEY</h1>
+        <p class="status">กรุณารอสักครู่เพื่อสร้างคีย์ของคุณ...</p>
+        
         <div id="timer">10</div>
-        <div id="key-box">ACHI-5222-DAYS-PRO</div>
-        <br>
-        <button id="copyBtn" disabled onclick="copyKey()">คัดลอกคีย์ (COPY KEY)</button>
+        
+        <div id="key-display" class="key-display"></div>
+        
+        <button id="actionBtn" disabled onclick="handleAction()">รอสักครู่...</button>
     </div>
 
     <script>
         let timeLeft = 10;
-        let timerElement = document.getElementById('timer');
-        let countdown = setInterval(() => {
+        const timerElement = document.getElementById('timer');
+        const btn = document.getElementById('actionBtn');
+        const keyDisplay = document.getElementById('key-display');
+        const statusText = document.querySelector('.status');
+
+        // ฟังก์ชั่นสุ่ม Key ให้เหมือนใน Roblox (ACHI-XXXXXXX-1000D)
+        function generateKey() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let result = "";
+            for (let i = 0; i < 8; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return "ACHI-" + result + "-1000D";
+        }
+
+        const finalKey = generateKey();
+
+        const countdown = setInterval(() => {
             timeLeft--;
             timerElement.innerText = timeLeft;
+            
             if (timeLeft <= 0) {
                 clearInterval(countdown);
                 timerElement.style.display = 'none';
-                document.getElementById('key-box').style.display = 'block';
-                document.getElementById('copyBtn').disabled = false;
+                statusText.innerText = "คีย์ของคุณพร้อมใช้งานแล้ว! (อายุ 1000 วัน)";
+                statusText.style.color = "#00ff00";
+                
+                keyDisplay.innerText = finalKey;
+                keyDisplay.style.display = 'block';
+                
+                btn.disabled = false;
+                btn.innerText = "คัดลอกคีย์ (COPY)";
             }
         }, 1000);
 
-        function copyKey() {
-            navigator.clipboard.writeText("ACHI-5222-DAYS-PRO");
-            alert("คัดลอกคีย์เรียบร้อยแล้ว! เอาไปใส่ในเกมได้เลย");
+        function handleAction() {
+            navigator.clipboard.writeText(finalKey).then(() => {
+                alert("คัดลอกคีย์แล้ว: " + finalKey + "\nเอาไปใส่ในเกมได้เลย!");
+                btn.innerText = "คัดลอกแล้ว!";
+                btn.style.background = "#008000";
+            });
         }
     </script>
 </body>
