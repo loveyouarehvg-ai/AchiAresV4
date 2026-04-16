@@ -1,154 +1,275 @@
---// ACHI-ARES V6.0 (Global Random Key System)
-local KeySystemGui = Instance.new("ScreenGui")
-local KeyFrame = Instance.new("Frame")
-local KeyInput = Instance.new("TextBox")
-local VerifyBtn = Instance.new("TextButton")
-local CopyLinkBtn = Instance.new("TextButton")
-local KeyTitle = Instance.new("TextLabel")
+--// ACHI-ARES V5.5 (Final Tutorial Edition)
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local UIStroke = Instance.new("UIStroke")
+local Title = Instance.new("TextLabel")
+local CloseBtn = Instance.new("TextButton")
+local FlingToggle = Instance.new("TextButton")
+local AimToggle = Instance.new("TextButton")
+local AntiGrabToggle = Instance.new("TextButton")
+local StrengthInput = Instance.new("TextBox")
+local UIListLayout = Instance.new("UIListLayout")
 
---// Logic สร้างคีย์สุ่มที่ตรงกับหน้าเว็บ (สุ่มตามเวลาปัจจุบัน)
-local function GetCurrentKey()
-    local date = os.date("!*t") -- เวลา UTC
-    -- ใช้ปี+เดือน+วัน+ชั่วโมง เป็นตัว Seed (บวก 7 เพื่อให้ตรงเวลาไทย)
-    local seedNum = (date.year * 1000000) + (date.month * 10000) + (date.day * 100) + (date.hour + 7)
-    math.randomseed(seedNum)
-    local randomNum = math.random(100000000, 999999999) -- สุ่มเลข 9 หลัก (พันล้านแบบ)
-    return "ACHI-" .. tostring(randomNum) .. "-1000D"
+--// Services
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local Debris = game:GetService("Debris")
+local RunService = game:GetService("RunService")
+local RS = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+
+--// GUI Setup
+ScreenGui.Name = "AchiAresV5_5"
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+MainFrame.Position = UDim2.new(0.5, -100, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 200, 0, 320)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Visible = false
+
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
+
+UIStroke.Thickness = 3
+UIStroke.Parent = MainFrame
+
+-- ระบบเปิด/ปิดเมนู และ คืนค่าเมาส์
+local function ToggleMenu()
+    MainFrame.Visible = not MainFrame.Visible
+    AimToggle.Modal = MainFrame.Visible
+    if MainFrame.Visible then
+        UserInputService.MouseIconEnabled = true
+    else
+        UserInputService.MouseIconEnabled = false
+    end
 end
 
-local CorrectKey = GetCurrentKey()
-local KeyLink = "https://loveyouarehvg-ai.github.io/AchiAresV4/" 
-
---// UI SETUP (Key System)
-KeySystemGui.Name = "AchiKeySystem"
-KeySystemGui.Parent = game:GetService("CoreGui")
-
-KeyFrame.Name = "KeyFrame"
-KeyFrame.Parent = KeySystemGui
-KeyFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-KeyFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-KeyFrame.Size = UDim2.new(0, 300, 0, 200)
-KeyFrame.Active = true
-KeyFrame.Draggable = true
-Instance.new("UICorner", KeyFrame)
-local Stroke = Instance.new("UIStroke", KeyFrame)
-Stroke.Color = Color3.fromRGB(255, 0, 0)
-Stroke.Thickness = 2
-
-KeyTitle.Parent = KeyFrame
-KeyTitle.Size = UDim2.new(1, 0, 0, 50)
-KeyTitle.Text = "ACHI-ARES RANDOM KEY"
-KeyTitle.TextColor3 = Color3.new(1, 0, 0)
-KeyTitle.Font = Enum.Font.GothamBold
-KeyTitle.TextSize = 18
-KeyTitle.BackgroundTransparency = 1
-
-KeyInput.Parent = KeyFrame
-KeyInput.Size = UDim2.new(0.8, 0, 0, 40)
-KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0)
-KeyInput.PlaceholderText = "กรอก Key จากหน้าเว็บ..."
-KeyInput.Text = ""
-KeyInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-KeyInput.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", KeyInput)
-
-VerifyBtn.Parent = KeyFrame
-VerifyBtn.Size = UDim2.new(0.4, 0, 0, 40)
-VerifyBtn.Position = UDim2.new(0.08, 0, 0.65, 0)
-VerifyBtn.Text = "ยืนยันคีย์"
-VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-VerifyBtn.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", VerifyBtn)
-
-CopyLinkBtn.Parent = KeyFrame
-CopyLinkBtn.Size = UDim2.new(0.4, 0, 0, 40)
-CopyLinkBtn.Position = UDim2.new(0.52, 0, 0.65, 0)
-CopyLinkBtn.Text = "รับคีย์ที่นี่"
-CopyLinkBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-CopyLinkBtn.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", CopyLinkBtn)
-
-CopyLinkBtn.MouseButton1Click:Connect(function()
-    setclipboard(KeyLink)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "คัดลอกลิงก์แล้ว!",
-        Text = "เปิดลิงก์ในเบราว์เซอร์เพื่อรับ Key",
-        Duration = 5
-    })
+-- ระบบสีรุ้ง
+RunService.RenderStepped:Connect(function()
+    local hue = tick() % 5 / 5
+    local color = Color3.fromHSV(hue, 1, 1)
+    UIStroke.Color = color
+    Title.TextColor3 = color
 end)
 
---// ฟังก์ชั่นรันสคริปต์หลัก (V5.5 เดิมของมึง - ห้ามแก้)
-local function ExecuteMainScript()
-    KeySystemGui:Destroy()
-    
-    --// [ส่วนนี้คือสคริปต์ V5.5 ของมึงทั้งหมด ห้ามแก้ตามสั่ง]
-    local ScreenGui = Instance.new("ScreenGui")
-    local MainFrame = Instance.new("Frame")
-    local UICorner = Instance.new("UICorner")
-    local UIStroke = Instance.new("UIStroke")
-    local Title = Instance.new("TextLabel")
-    local CloseBtn = Instance.new("TextButton")
-    local FlingToggle = Instance.new("TextButton")
-    local AimToggle = Instance.new("TextButton")
-    local AntiGrabToggle = Instance.new("TextButton")
-    local StrengthInput = Instance.new("TextBox")
-    local UIListLayout = Instance.new("UIListLayout")
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.Text = "ACHI-ARES BY อชิ"
+Title.Font = Enum.Font.SpecialElite
+Title.TextSize = 18
+Title.BackgroundTransparency = 1
+Title.Parent = MainFrame
 
-    local UserInputService = game:GetService("UserInputService")
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local Camera = workspace.CurrentCamera
-    local Debris = game:GetService("Debris")
-    local RunService = game:GetService("RunService")
-    local RS = game:GetService("ReplicatedStorage")
-    local StarterGui = game:GetService("StarterGui")
+CloseBtn.Name = "CloseBtn"
+CloseBtn.Parent = MainFrame
+CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 60)
+CloseBtn.Position = UDim2.new(1, -25, 0, 5)
+CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.ZIndex = 3
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
-    ScreenGui.Name = "AchiAresV5_5"
-    ScreenGui.Parent = game:GetService("CoreGui")
-    ScreenGui.ResetOnSpawn = false
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+UIListLayout.Parent = MainFrame
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIListLayout.Padding = UDim.new(0, 8)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-    MainFrame.Name = "MainFrame"
-    MainFrame.Parent = ScreenGui
-    MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-    MainFrame.Position = UDim2.new(0.5, -100, 0.5, -150)
-    MainFrame.Size = UDim2.new(0, 200, 0, 320)
-    MainFrame.Active = true
-    MainFrame.Draggable = true
-    MainFrame.Visible = true 
+--// Config
+local FlingEnabled = false
+local AimbotEnabled = false
+local AntiGrabEnabled = false
+local MenuKey = Enum.KeyCode.K
 
-    UICorner.CornerRadius = UDim.new(0, 10)
-    UICorner.Parent = MainFrame
-    UIStroke.Thickness = 3
-    UIStroke.Parent = MainFrame
+local function StyleButton(btn, text)
+    btn.Size = UDim2.new(0.9, 0, 0, 35)
+    btn.Text = text
+    btn.Font = Enum.Font.GothamSemibold
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    btn.ZIndex = 3
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    btn.Parent = MainFrame
+end
 
-    local ExpireText = Instance.new("TextLabel", MainFrame)
-    ExpireText.Size = UDim2.new(1, 0, 0, 20)
-    ExpireText.Position = UDim2.new(0, 0, 0.12, 0)
-    ExpireText.BackgroundTransparency = 1
-    ExpireText.Text = "Expire: 1000 Days (Verified)"
-    ExpireText.TextColor3 = Color3.fromRGB(0, 255, 0)
-    ExpireText.Font = Enum.Font.Gotham
-    ExpireText.TextSize = 10
+StyleButton(FlingToggle, "Fling: OFF")
+StyleButton(AimToggle, "Aimbot: OFF")
+StyleButton(AntiGrabToggle, "Anti-Grab/Struggle: OFF")
 
-    UserInputService.InputBegan:Connect(function(i, gp)
-        if not gp and i.KeyCode == Enum.KeyCode.K then 
-            MainFrame.Visible = not MainFrame.Visible 
+StrengthInput.Size = UDim2.new(0.9, 0, 0, 35)
+StrengthInput.PlaceholderText = "Fling Force..."
+StrengthInput.Text = "500"
+StrengthInput.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+StrengthInput.TextColor3 = Color3.new(1, 1, 1)
+StrengthInput.ZIndex = 3
+StrengthInput.Parent = MainFrame
+Instance.new("UICorner", StrengthInput).CornerRadius = UDim.new(0, 8)
+
+--// [SECTION 1] AIMBOT Q (ห้ามแก้โค้ด)
+local Settings = { BindKey = "Q" }
+local isClicking = false
+
+local function getClosestPlayer()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local distance = (player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).magnitude
+            if distance < shortestDistance then
+                closestPlayer = player
+                shortestDistance = distance
+            end
+        end
+    end
+    return closestPlayer
+end
+
+local function aimAt(target)
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPosition = target.Character.HumanoidRootPart.Position
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPosition)
+        if not isClicking then
+            isClicking = true
+            if mouse1click then mouse1click() end
+            isClicking = false
+        end
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if AimbotEnabled and input.KeyCode == Enum.KeyCode[Settings.BindKey:upper()] and not gameProcessed then
+        local closestPlayer = getClosestPlayer()
+        aimAt(closestPlayer)
+    end
+end)
+
+--// [SECTION 2] ANTI-GRAB STRUGGLE (แก้บัคปิดไม่ได้ / ห้ามแก้ส่วนอื่น)
+local CE = RS:WaitForChild("CharacterEvents", 5)
+local StruggleEvent = CE and CE:WaitForChild("Struggle", 5)
+local BeingHeld = LocalPlayer:WaitForChild("IsHeld", 5)
+
+if BeingHeld then
+    BeingHeld.Changed:Connect(function(C)
+        if AntiGrabEnabled and C == true then
+            local char = LocalPlayer.Character
+            if BeingHeld.Value == true and StruggleEvent then
+                local Event;
+                Event = RunService.RenderStepped:Connect(function()
+                    if AntiGrabEnabled and BeingHeld.Value == true then
+                        if char and char:FindFirstChild("HumanoidRootPart") then
+                            char["HumanoidRootPart"].AssemblyLinearVelocity = Vector3.new()
+                        end
+                        StruggleEvent:FireServer(LocalPlayer)
+                    else
+                        Event:Disconnect()
+                    end
+                end)
+            end
         end
     end)
 end
 
---// Logic ยืนยัน Key
-VerifyBtn.MouseButton1Click:Connect(function()
-    if KeyInput.Text == CorrectKey then
-        VerifyBtn.Text = "สำเร็จ!"
-        task.wait(0.5)
-        ExecuteMainScript()
-    else
-        KeyInput.Text = ""
-        KeyInput.PlaceholderText = "คีย์ผิด!"
-        VerifyBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-        task.wait(0.5)
-        VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+local function reconnect()
+    if not AntiGrabEnabled then return end
+    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local Humanoid = Character:FindFirstChildWhichIsA("Humanoid") or Character:WaitForChild("Humanoid")
+    local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+    
+    local firePart = HumanoidRootPart:WaitForChild("FirePlayerPart", 2)
+    if firePart then firePart:Remove() end
+
+    Humanoid.Changed:Connect(function(C)
+        if AntiGrabEnabled and C == "Sit" and Humanoid.Sit == true then
+            if Humanoid.SeatPart ~= nil and tostring(Humanoid.SeatPart.Parent) == "CreatureBlobman" then
+            elseif Humanoid.SeatPart == nil then
+                Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+                Humanoid.Sit = false
+            end
+        end
+    end)
+end
+
+LocalPlayer.CharacterAdded:Connect(reconnect)
+
+--// [SECTION 3] TOGGLES
+local function UpdateToggle(btn, state, text)
+    btn.Text = text .. (state and ": ON" or ": OFF")
+    btn.BackgroundColor3 = state and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(30, 30, 30)
+end
+
+FlingToggle.MouseButton1Click:Connect(function()
+    FlingEnabled = not FlingEnabled
+    UpdateToggle(FlingToggle, FlingEnabled, "Fling")
+end)
+
+AimToggle.MouseButton1Click:Connect(function()
+    AimbotEnabled = not AimbotEnabled
+    UpdateToggle(AimToggle, AimbotEnabled, "Aimbot")
+end)
+
+AntiGrabToggle.MouseButton1Click:Connect(function()
+    AntiGrabEnabled = not AntiGrabEnabled
+    if AntiGrabEnabled then reconnect() end
+    UpdateToggle(AntiGrabToggle, AntiGrabEnabled, "Anti-Grab/Struggle")
+end)
+
+--// FLING LOGIC
+workspace.ChildAdded:Connect(function(m)
+    if FlingEnabled and m.Name == "GrabParts" then
+        local gp = m:WaitForChild("GrabPart", 2)
+        if gp and gp:FindFirstChild("WeldConstraint") then
+            local p1 = gp.WeldConstraint.Part1
+            if p1 then
+                local bv = Instance.new("BodyVelocity", p1)
+                m:GetPropertyChangedSignal("Parent"):Connect(function()
+                    if not m.Parent then
+                        if UserInputService:GetLastInputType() == Enum.UserInputType.MouseButton2 then
+                            bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                            bv.Velocity = Camera.CFrame.LookVector * tonumber(StrengthInput.Text)
+                            Debris:AddItem(bv, 1)
+                        else
+                            bv:Destroy()
+                        end
+                    end
+                end)
+            end
+        end
     end
+end)
+
+UserInputService.InputBegan:Connect(function(i, gp)
+    if not gp and i.KeyCode == MenuKey then 
+        ToggleMenu() 
+    end
+end)
+
+--// คำอธิบายการใช้งานภาษาไทย 5 วินาที
+task.spawn(function()
+    local function Notify(title, text)
+        StarterGui:SetCore("SendNotification", {
+            Title = title,
+            Text = text,
+            Duration = 5
+        })
+    end
+
+    Notify("ยินดีต้อนรับ!", "ACHI-ARES V5.5 BY อชิ โหลดแล้ว!")
+    task.wait(1)
+    Notify("ปุ่มเปิดเมนู", "กดปุ่ม [ K ] เพื่อเปิดเมนูและปลดล็อคเมาส์")
+    task.wait(1)
+    Notify("วิธีใช้ AIMBOT", "เปิด ON แล้วกดปุ่ม [ Q ] เพื่อล็อคเป้าหมาย")
+    task.wait(1)
+    Notify("ระบบ FLING", "ใส่ความแรงแล้วเปิด ON เพื่อสะบัดศัตรู")
+    task.wait(1)
+    Notify("ANTI-GRAB", "เมื่อโดนจับ ตัวจะหลุดเองทันที (หลุดบัคปิดไม่ได้แล้ว)")
 end)
